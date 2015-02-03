@@ -2,7 +2,7 @@
 /**
  * @author Todd Burry <todd@vanillaforums.com>
  * @copyright 2009-2014 Vanilla Forums Inc.
- * @license Proprietary
+ * @license MIT
  */
 
 namespace Vanilla\Github;
@@ -13,16 +13,28 @@ class GithubSync {
     /// Properties ///
 
     /*
-     * @var HttpClient
+     * @var HttpClient The api connection to github.
      */
     protected $api;
 
+    /**
+     * @var string
+     */
     protected $accessToken;
 
+    /**
+     * @var string The base github url.
+     */
     protected $baseUrl = 'https://api.github.com';
 
+    /**
+     * @var string The name of the repo to copy from.
+     */
     protected $fromRepo;
 
+    /**
+     * @var string The name of the repo to copy to.
+     */
     protected $toRepo;
 
     /// Methods ///
@@ -79,7 +91,14 @@ class GithubSync {
         return $this;
     }
 
+    /**
+     * Get all the labels from a given repo.
+     *
+     * @param string $repo The name of the github repo in the form `user/repo`.
+     * @return array Returns an array of the labels in the repo.
+     */
     public function getLabels($repo) {
+        echo "GET /repos/$repo/labels\n";
         $r = $this->api()->get("/repos/$repo/labels", [], [], ['throw' => true]);
 
         $labels = $r->getBody();
@@ -104,6 +123,11 @@ class GithubSync {
         return $this;
     }
 
+    /**
+     * Copy the labels from one repo to another.
+     *
+     * @param bool $delete Whether or not to delete labels in the destination that aren't in the source.
+     */
     public function syncLabels($delete = false) {
         echo "Synchronizing labels from {$this->fromRepo} to {$this->toRepo}...\n";
         $fromLabels = $this->getLabels($this->getFromRepo());
