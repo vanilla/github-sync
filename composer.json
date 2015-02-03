@@ -1,15 +1,21 @@
 {
     "name": "vanilla/github-labelsync",
     "description": "Copy the labels from one github repo to another one.",
-    "require": {
-        "mashape/unirest-php": "~2.1",
-        "vanilla/garden-cli": "*"
-    },
     "license": "MIT",
     "authors": [
         {
             "name": "Todd Burry",
             "email": "todd@vanillaforums.com"
+        }
+    ],
+    "require": {
+        "vanilla/garden-http": "dev-master",
+        "vanilla/garden-cli": "*"
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "git@github.com:vanilla/garden-http.git"
         }
     ],
     "autoload": {

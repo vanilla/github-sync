@@ -7,12 +7,15 @@
 
 namespace Vanilla\Github;
 
-use Unirest\Request;
-use Unirest\Response;
-
+use Garden\Http\HttpClient;
 
 class GithubSync {
     /// Properties ///
+
+    /*
+     * @var HttpClient
+     */
+    protected $api;
 
     protected $accessToken;
 
@@ -27,8 +30,20 @@ class GithubSync {
 
     public function __construct($accessToken = '') {
         $this->setAccessToken($accessToken);
-        Request::jsonOpts(true);
-        Request::defaultHeader('Content-Type', 'application/json');
+    }
+
+    /**
+     * Gets the http
+     * @return HttpClient
+     */
+    public function api() {
+        if (!isset($this->api)) {
+            $api = new HttpClient();
+            $api->setBaseUrl('https://api.github.com')
+                ->setDefaultHeader('Content-Type', 'application/json');
+            $this->api = $api;
+        }
+        return $this->api;
     }
 
     /**
@@ -44,7 +59,7 @@ class GithubSync {
      */
     public function setAccessToken($accessToken) {
         $this->accessToken = $accessToken;
-        Request::defaultHeader('Authorization', "token $accessToken");
+        $this->api()->setDefaultHeader('Authorization', "token $accessToken");
         return $this;
     }
 
@@ -64,17 +79,10 @@ class GithubSync {
         return $this;
     }
 
-    protected function getData(Response $response) {
-        if (preg_match('`^2\d{2}`', $response->code)) {
-            return $response->body;
-        } else {
-            throw new \Exception($response->body['message'], $response->code);
-        }
-    }
-
     public function getLabels($repo) {
-        $labels = Request::get("{$this->baseUrl}/repos/$repo/labels");
-        $labels = $this->getData($labels);
+        $r = $this->api()->get("/repos/$repo/labels", [], [], ['throw' => true]);
+
+        $labels = $r->getBody();
         $labels = array_column($labels, null, 'name');
         $labels = array_change_key_case($labels);
         return $labels;
@@ -107,12 +115,13 @@ class GithubSync {
         });
         foreach ($addLabels as $label) {
             echo "Adding {$label['name']} ";
-            $r = Request::post(
-                "{$this->baseUrl}/repos/{$this->toRepo}/labels",
-                [],
-                json_encode(['name' => $label['name'], 'color' => $label['color']])
+
+            $r = $this->api()->post(
+                "/repos/{$this->toRepo}/labels",
+                ['name' => $label['name'], 'color' => $label['color']]
             );
-            echo $r->code."\n";
+
+            echo $r->getStatusCode()."\n";
         }
 
         // Get the labels that need to be updated.
@@ -130,12 +139,12 @@ class GithubSync {
             echo "Updating {$label['name']} ";
             $newLabel = $fromLabels[strtolower($label['name'])];
 
-            $r = Request::patch(
-                "{$this->baseUrl}/repos/{$this->toRepo}/labels/".rawurlencode($label['name']),
-                [],
-                json_encode(['name' => $newLabel['name'], 'color' => $newLabel['color']])
+            $r = $this->api()->patch(
+                "/repos/{$this->toRepo}/labels/".rawurlencode($label['name']),
+                ['name' => $newLabel['name'], 'color' => $newLabel['color']]
+
             );
-            echo $r->code."\n";
+            echo $r->getStatusCode()."\n";
         }
 
         // Get the labels to delete.
@@ -144,12 +153,10 @@ class GithubSync {
             if ($delete) {
                 echo "Deleting {$label['name']} ";
 
-
-                $r = Request::delete(
-                    "{$this->baseUrl}/repos/{$this->toRepo}/labels/".rawurlencode($label['name'])
+                $r = $this->api()->delete(
+                    "/repos/{$this->toRepo}/labels/".rawurlencode($label['name'])
                 );
-
-                echo $r->code."\n";
+                echo $r->getStatusCode()."\n";
             } else {
                 echo "Not deleting {$label['name']}\n";
             }

@@ -4,64 +4,20 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "ac143e98170e9c7c44ff6c71c9d55bb0",
+    "hash": "4c8cf765bbfc5efcf7f7bb235c74c72a",
     "packages": [
         {
-            "name": "mashape/unirest-php",
-            "version": "2.1.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/Mashape/unirest-php.git",
-                "reference": "90be29ced49f9f7e9fe257fcabce1a109829653e"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/Mashape/unirest-php/zipball/90be29ced49f9f7e9fe257fcabce1a109829653e",
-                "reference": "90be29ced49f9f7e9fe257fcabce1a109829653e",
-                "shasum": ""
-            },
-            "require": {
-                "ext-curl": "*",
-                "ext-json": "*",
-                "php": ">=5.4.0"
-            },
-            "require-dev": {
-                "codeclimate/php-test-reporter": "0.1.*",
-                "phpunit/phpunit": "~4.4"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-0": {
-                    "Unirest": "src"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "description": "Unirest PHP",
-            "homepage": "https://github.com/Mashape/unirest-php",
-            "keywords": [
-                "client",
-                "curl",
-                "http",
-                "https",
-                "rest"
-            ],
-            "time": "2015-01-15 06:47:58"
-        },
-        {
             "name": "vanilla/garden-cli",
-            "version": "v1.0.0",
+            "version": "v1.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/vanilla/garden-cli.git",
-                "reference": "15a79eef181050fc4915c80d0ffff608c8d58dff"
+                "reference": "c979b6bf804932c62c7249b6142e39c02595a47f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/vanilla/garden-cli/zipball/15a79eef181050fc4915c80d0ffff608c8d58dff",
-                "reference": "15a79eef181050fc4915c80d0ffff608c8d58dff",
+                "url": "https://api.github.com/repos/vanilla/garden-cli/zipball/c979b6bf804932c62c7249b6142e39c02595a47f",
+                "reference": "c979b6bf804932c62c7249b6142e39c02595a47f",
                 "shasum": ""
             },
             "require": {
@@ -80,18 +36,63 @@
             "authors": [
                 {
                     "name": "Todd Burry",
-                    "email": "todd@vanillaforums.com",
-                    "role": "Developer"
+                    "email": "todd@vanillaforums.com"
                 }
             ],
             "description": "A full-featured, yet ridiculously simple commandline parser for your next php cli script. Stop fighting with getopt().",
-            "time": "2014-07-10 20:39:26"
+            "time": "2015-01-30 15:09:33"
+        },
+        {
+            "name": "vanilla/garden-http",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/vanilla/garden-http.git",
+                "reference": "285b37b24574fd1d491cdb2fba45dfa9f79fc547"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/vanilla/garden-http/zipball/285b37b24574fd1d491cdb2fba45dfa9f79fc547",
+                "reference": "285b37b24574fd1d491cdb2fba45dfa9f79fc547",
+                "shasum": ""
+            },
+            "require-dev": {
+                "vanilla/garden": "dev-master"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Garden\\Http\\": "src"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Garden\\Http\\Tests\\": "tests"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Todd Burry",
+                    "email": "todd@vanillaforums.com"
+                }
+            ],
+            "description": "An HTTP client library for building RESTful API clients.",
+            "support": {
+                "source": "https://github.com/vanilla/garden-http/tree/master",
+                "issues": "https://github.com/vanilla/garden-http/issues"
+            },
+            "time": "2015-02-03 19:26:38"
         }
     ],
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {
+        "vanilla/garden-http": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": [],
