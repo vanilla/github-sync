@@ -9,8 +9,8 @@
         }
     ],
     "require": {
-        "vanilla/garden-http": "~1.0",
-        "vanilla/garden-cli": "~1.1"
+        "vanilla/garden-http": "^1.0",
+        "vanilla/garden-cli": "^1.1"
     },
     "repositories": [
         {
