@@ -1,6 +1,6 @@
 {
-    "name": "vanilla/github-labelsync",
-    "description": "Copy the labels from one github repo to another one.",
+    "name": "vanilla/github-sync",
+    "description": "Copy github configurations from one github repo to another one.",
     "license": "MIT",
     "authors": [
         {
