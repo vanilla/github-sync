@@ -213,10 +213,58 @@ class GithubSync {
         $this->message("Done.");
     }
 
-            }
+    public function syncMilestones($state = 'open') {
+        $this->message("Synchronizing milestones from {$this->fromRepo} to {$this->toRepo}.");
+
+        $fromMilestones = $this->getMilestones($this->getFromRepo(), $state);
+        $toMilestones = $this->getMilestones($this->getToRepo(), 'all');
+
+        // Add the new milestones.
+        $addMilestones = array_diff_ukey($fromMilestones, $toMilestones, function ($from, $to) {
+            return strcasecmp($to, $from);
+        });
+
+        foreach ($addMilestones as $milestone) {
+            $r = $this->api()->post(
+                "/repos/{$this->toRepo}/milestones",
+                ['title' => $milestone['title'], 'description' => $milestone['description'], 'due_on' => $milestone['due_on']]
+            );
+
+            $this->message("Add {$milestone['title']}.", $r->getStatusCode());
         }
 
-        echo "Done.\n";
+        // Update the existing milestones.
+        $updateMilestones = array_intersect_key($toMilestones, $fromMilestones);
+        $updateMilestones = array_filter($updateMilestones, function($to) use ($fromMilestones) {
+            $from = $fromMilestones[strtolower($to['title'])];
+
+            if ($from['title'] !== $to['title'] ||
+                $from['description'] !== $to['description'] ||
+                $from['due_on'] !== $to['due_on']) {
+
+                return true;
+            }
+            return false;
+        });
+
+        foreach ($updateMilestones as $milestone) {
+            $r = $this->api()->patch(
+                "/repos/{$this->toRepo}/milestones/{$milestone['number']}",
+                ['description' => $milestone['description'], 'due_on' => $milestone['description']]
+            );
+
+            $this->message("Update {$milestone['title']}.", $r->getStatusCode());
+        }
+
+        $this->message('Done.');
+    }
+
+    public function getMilestones($repo, $state = 'open') {
+        $r = $this->api()->get("/repos/$repo/milestones", ['state' => $state]);
+        $data = array_column($r->getBody(), null, 'title');
+        return $data;
+    }
+
     /**
      * Get the messageLevel.
      *
