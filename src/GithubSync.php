@@ -33,6 +33,11 @@ class GithubSync {
     protected $fromRepo;
 
     /**
+     * @var int The level at which messages will be output.
+     */
+    protected $messageLevel = LOG_DEBUG;
+
+    /**
      * @var string The name of the repo to copy to.
      */
     protected $toRepo;
@@ -98,13 +103,35 @@ class GithubSync {
      * @return array Returns an array of the labels in the repo.
      */
     public function getLabels($repo) {
-        echo "GET /repos/$repo/labels\n";
+        $this->message("GET /repos/$repo/labels", LOG_DEBUG);
         $r = $this->api()->get("/repos/$repo/labels", [], [], ['throw' => true]);
 
         $labels = $r->getBody();
         $labels = array_column($labels, null, 'name');
         $labels = array_change_key_case($labels);
         return $labels;
+    }
+
+    /**
+     * Echo a message in a standard format.
+     *
+     * @param string $message The message to echo.
+     * @param int $level The level of the message or an HTTP status code.
+     */
+    public function message($message, $level = LOG_INFO) {
+        if ($level >= 200 && $level < 400) {
+            $message .= " $level";
+            $level = LOG_DEBUG;
+        } elseif ($level >= 400) {
+            $message .= " $level";
+            $level = LOG_ERR;
+        }
+
+        if ($level > $this->messageLevel) {
+            return;
+        }
+
+        echo '['.date('Y-m-d H:m:s').'] '.$message."\n";
     }
 
     /**
@@ -129,7 +156,7 @@ class GithubSync {
      * @param bool $delete Whether or not to delete labels in the destination that aren't in the source.
      */
     public function syncLabels($delete = false) {
-        echo "Synchronizing labels from {$this->fromRepo} to {$this->toRepo}...\n";
+        $this->message("Synchronizing labels from {$this->fromRepo} to {$this->toRepo}.");
         $fromLabels = $this->getLabels($this->getFromRepo());
         $toLabels = $this->getLabels($this->getToRepo());
 
@@ -138,14 +165,12 @@ class GithubSync {
             return strcasecmp($to['name'], $from['name']);
         });
         foreach ($addLabels as $label) {
-            echo "Adding {$label['name']} ";
-
             $r = $this->api()->post(
                 "/repos/{$this->toRepo}/labels",
                 ['name' => $label['name'], 'color' => $label['color']]
             );
 
-            echo $r->getStatusCode()."\n";
+            $this->message("Add {$label['name']}", $r->getStatusCode());
         }
 
         // Get the labels that need to be updated.
@@ -160,7 +185,6 @@ class GithubSync {
         });
 
         foreach ($updateLabels as $label) {
-            echo "Updating {$label['name']} ";
             $newLabel = $fromLabels[strtolower($label['name'])];
 
             $r = $this->api()->patch(
@@ -168,24 +192,48 @@ class GithubSync {
                 ['name' => $newLabel['name'], 'color' => $newLabel['color']]
 
             );
-            echo $r->getStatusCode()."\n";
+
+            $this->message("Update {$label['name']}", $r->getStatusCode());
         }
 
         // Get the labels to delete.
         $deleteLabels = array_diff_key($toLabels, $fromLabels);
         foreach ($deleteLabels as $label) {
             if ($delete) {
-                echo "Deleting {$label['name']} ";
-
                 $r = $this->api()->delete(
                     "/repos/{$this->toRepo}/labels/".rawurlencode($label['name'])
                 );
-                echo $r->getStatusCode()."\n";
+
+                $this->message("Delete {$label['name']}", $r->getStatusCode());
             } else {
-                echo "Not deleting {$label['name']}\n";
+                $this->message("Not deleting {$label['name']}", LOG_DEBUG);
+            }
+        }
+
+        $this->message("Done.");
+    }
+
             }
         }
 
         echo "Done.\n";
+    /**
+     * Get the messageLevel.
+     *
+     * @return int Returns the messageLevel.
+     */
+    public function getMessageLevel() {
+        return $this->messageLevel;
+    }
+
+    /**
+     * Set the messageLevel.
+     *
+     * @param int $messageLevel
+     * @return GithubSync Returns `$this` for fluent calls.
+     */
+    public function setMessageLevel($messageLevel) {
+        $this->messageLevel = $messageLevel;
+        return $this;
     }
 }
