@@ -32,6 +32,7 @@ $cli->opt('from:f', 'The github repo to copy the labels from.', true)
     ->command('milestones')
     ->description('Copy milestones from one github repo to another.')
     ->opt('status:s', 'The milestone status. One of open, closed, all. Defaults to open.')
+    ->opt('autoclose', 'Whether or not to close milestones that are overdue and don\'t have any items.', false, 'boolean')
     ;
 
 $args = $cli->parse($argv);
@@ -48,7 +49,7 @@ try {
             $sync->syncLabels($args->getOpt('delete'));
             break;
         case 'milestones':
-            $sync->syncMilestones($args->getOpt('status', 'open'));
+            $sync->syncMilestones($args->getOpt('status', 'open'), $args->getOpt('autoclose', false));
             break;
     }
 } catch (Exception $ex) {
