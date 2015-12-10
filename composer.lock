@@ -1,23 +1,24 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "4c8cf765bbfc5efcf7f7bb235c74c72a",
+    "hash": "0ca20b5c8bca8e57246eb47d35cc29e0",
+    "content-hash": "5c7ad3edcdecac4032246c87e9d63672",
     "packages": [
         {
             "name": "vanilla/garden-cli",
-            "version": "v1.1.0",
+            "version": "v1.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/vanilla/garden-cli.git",
-                "reference": "c979b6bf804932c62c7249b6142e39c02595a47f"
+                "reference": "b390bded7c63db81125b7f1298be70d1ab233f50"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/vanilla/garden-cli/zipball/c979b6bf804932c62c7249b6142e39c02595a47f",
-                "reference": "c979b6bf804932c62c7249b6142e39c02595a47f",
+                "url": "https://api.github.com/repos/vanilla/garden-cli/zipball/b390bded7c63db81125b7f1298be70d1ab233f50",
+                "reference": "b390bded7c63db81125b7f1298be70d1ab233f50",
                 "shasum": ""
             },
             "require": {
@@ -40,21 +41,25 @@
                 }
             ],
             "description": "A full-featured, yet ridiculously simple commandline parser for your next php cli script. Stop fighting with getopt().",
-            "time": "2015-01-30 15:09:33"
+            "time": "2015-10-28 20:22:05"
         },
         {
             "name": "vanilla/garden-http",
-            "version": "dev-master",
+            "version": "v1.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/vanilla/garden-http.git",
-                "reference": "285b37b24574fd1d491cdb2fba45dfa9f79fc547"
+                "reference": "842d192bd195d025a10389c7f4c40fba8733866d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/vanilla/garden-http/zipball/285b37b24574fd1d491cdb2fba45dfa9f79fc547",
-                "reference": "285b37b24574fd1d491cdb2fba45dfa9f79fc547",
+                "url": "https://api.github.com/repos/vanilla/garden-http/zipball/842d192bd195d025a10389c7f4c40fba8733866d",
+                "reference": "842d192bd195d025a10389c7f4c40fba8733866d",
                 "shasum": ""
+            },
+            "require": {
+                "lib-curl": "*",
+                "php": ">=5.4.0"
             },
             "require-dev": {
                 "vanilla/garden": "dev-master"
@@ -79,20 +84,18 @@
                     "email": "todd@vanillaforums.com"
                 }
             ],
-            "description": "An HTTP client library for building RESTful API clients.",
+            "description": "An unbloated HTTP client library for building RESTful API clients.",
             "support": {
-                "source": "https://github.com/vanilla/garden-http/tree/master",
+                "source": "https://github.com/vanilla/garden-http/tree/v1.1.0",
                 "issues": "https://github.com/vanilla/garden-http/issues"
             },
-            "time": "2015-02-03 19:26:38"
+            "time": "2015-12-01 22:15:35"
         }
     ],
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "vanilla/garden-http": 20
-    },
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": [],
