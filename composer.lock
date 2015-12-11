@@ -45,16 +45,16 @@
         },
         {
             "name": "vanilla/garden-http",
-            "version": "v1.1.0",
+            "version": "v1.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/vanilla/garden-http.git",
-                "reference": "842d192bd195d025a10389c7f4c40fba8733866d"
+                "reference": "da3b859774613031788eaa148a7e9e8622f6bc2a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/vanilla/garden-http/zipball/842d192bd195d025a10389c7f4c40fba8733866d",
-                "reference": "842d192bd195d025a10389c7f4c40fba8733866d",
+                "url": "https://api.github.com/repos/vanilla/garden-http/zipball/da3b859774613031788eaa148a7e9e8622f6bc2a",
+                "reference": "da3b859774613031788eaa148a7e9e8622f6bc2a",
                 "shasum": ""
             },
             "require": {
@@ -86,10 +86,10 @@
             ],
             "description": "An unbloated HTTP client library for building RESTful API clients.",
             "support": {
-                "source": "https://github.com/vanilla/garden-http/tree/v1.1.0",
+                "source": "https://github.com/vanilla/garden-http/tree/master",
                 "issues": "https://github.com/vanilla/garden-http/issues"
             },
-            "time": "2015-12-01 22:15:35"
+            "time": "2015-12-10 21:39:51"
         }
     ],
     "packages-dev": [],
