@@ -7,13 +7,14 @@
 
 namespace Vanilla\Github;
 
+use Garden\Cli\LogFormatter;
 use Garden\Http\HttpClient;
 
 class GithubSync {
     /// Properties ///
 
     /*
-     * @var HttpClient The api connection to github.
+     * @var GithubClient The api connection to github.
      */
     protected $api;
 
@@ -33,19 +34,20 @@ class GithubSync {
     protected $fromRepo;
 
     /**
-     * @var int The level at which messages will be output.
-     */
-    protected $messageLevel = LOG_DEBUG;
-
-    /**
      * @var string The name of the repo to copy to.
      */
     protected $toRepo;
+
+    /**
+     * @var LogFormatter
+     */
+    protected $log;
 
     /// Methods ///
 
 
     public function __construct($accessToken = '') {
+        $this->log = new LogFormatter();
         $this->setAccessToken($accessToken);
     }
 
@@ -55,9 +57,11 @@ class GithubSync {
      */
     public function api() {
         if (!isset($this->api)) {
-            $api = new HttpClient();
+            $api = new GithubClient();
             $api->setBaseUrl('https://api.github.com')
-                ->setDefaultHeader('Content-Type', 'application/json');
+                ->setDefaultHeader('Content-Type', 'application/json')
+                ->setLog($this->log);
+
             $this->api = $api;
         }
         return $this->api;
@@ -103,7 +107,6 @@ class GithubSync {
      * @return array Returns an array of the labels in the repo.
      */
     public function getLabels($repo) {
-        $this->message("GET /repos/$repo/labels", LOG_DEBUG);
         $r = $this->api()->get("/repos/$repo/labels", [], [], ['throw' => true]);
 
         $labels = $r->getBody();
@@ -125,10 +128,6 @@ class GithubSync {
         } elseif ($level >= 400) {
             $message .= " $level";
             $level = LOG_ERR;
-        }
-
-        if ($level > $this->messageLevel) {
-            return;
         }
 
         echo '['.date('Y-m-d H:m:s').'] '.$message."\n";
@@ -156,7 +155,7 @@ class GithubSync {
      * @param bool $delete Whether or not to delete labels in the destination that aren't in the source.
      */
     public function syncLabels($delete = false) {
-        $this->message("Synchronizing labels from {$this->fromRepo} to {$this->toRepo}.");
+        $this->log->begin("Synchronizing labels from {$this->fromRepo} to {$this->toRepo}");
         $fromLabels = $this->getLabels($this->getFromRepo());
         $toLabels = $this->getLabels($this->getToRepo());
 
@@ -165,12 +164,14 @@ class GithubSync {
             return strcasecmp($to['name'], $from['name']);
         });
         foreach ($addLabels as $label) {
+            $this->log->begin("Add {$label['name']}");
+
             $r = $this->api()->post(
                 "/repos/{$this->toRepo}/labels",
                 ['name' => $label['name'], 'color' => $label['color']]
             );
 
-            $this->message("Add {$label['name']}", $r->getStatusCode());
+            $this->log->endHttpStatus($r->getStatusCode(), true);
         }
 
         // Get the labels that need to be updated.
@@ -187,34 +188,38 @@ class GithubSync {
         foreach ($updateLabels as $label) {
             $newLabel = $fromLabels[strtolower($label['name'])];
 
+            $this->log->begin("Update {$label['name']}");
+
             $r = $this->api()->patch(
                 "/repos/{$this->toRepo}/labels/".rawurlencode($label['name']),
                 ['name' => $newLabel['name'], 'color' => $newLabel['color']]
 
             );
 
-            $this->message("Update {$label['name']}", $r->getStatusCode());
+            $this->log->endHttpStatus($r->getStatusCode(), true);
         }
 
         // Get the labels to delete.
         $deleteLabels = array_diff_key($toLabels, $fromLabels);
         foreach ($deleteLabels as $label) {
             if ($delete) {
+                $this->log->begin("Delete {$label['name']}");
+
                 $r = $this->api()->delete(
                     "/repos/{$this->toRepo}/labels/".rawurlencode($label['name'])
                 );
 
-                $this->message("Delete {$label['name']}", $r->getStatusCode());
+                $this->log->endHttpStatus($r->getStatusCode(), true);
             } else {
-                $this->message("Not deleting {$label['name']}", LOG_DEBUG);
+                $this->log->message("Not deleting {$label['name']}");
             }
         }
 
-        $this->message("Done.");
+        $this->log->end("Done");
     }
 
     public function syncMilestones($state = 'open', $autoClose = false) {
-        $this->message("Synchronizing milestones from {$this->fromRepo} to {$this->toRepo}.");
+        $this->log->begin("Synchronizing milestones from {$this->fromRepo} to {$this->toRepo}");
 
         $fromMilestones = $this->getMilestones($this->getFromRepo(), $state);
         $toMilestones = $this->getMilestones($this->getToRepo(), 'all');
@@ -240,12 +245,14 @@ class GithubSync {
 
 
         foreach ($addMilestones as $milestone) {
+            $this->log->begin("Add {$milestone['title']}");
+
             $r = $this->api()->post(
                 "/repos/{$this->toRepo}/milestones",
                 ['title' => $milestone['title'], 'description' => $milestone['description'], 'due_on' => $milestone['due_on']]
             );
 
-            $this->message("Add {$milestone['title']}.", $r->getStatusCode());
+            $this->log->endHttpStatus($r->getStatusCode(), true);
         }
 
         // Update the existing milestones.
@@ -292,6 +299,8 @@ class GithubSync {
                 throw new \Exception("Oops. Something went wrong.", 500);
             }
 
+            $this->log->begin("Update {$milestone['title']}");
+
             $r = $this->api()->patch(
                 "/repos/{$this->toRepo}/milestones/{$milestone['number']}",
                 [
@@ -301,7 +310,7 @@ class GithubSync {
                 ]
             );
 
-            $this->message("Update {$milestone['title']}.", $r->getStatusCode());
+            $this->log->endHttpStatus($r->getStatusCode(), true);
         }
 
         // Check for auto-closing milestones.
@@ -319,19 +328,21 @@ class GithubSync {
                 $diff = $dueOn->diff(new \DateTime);
 
                 if ($diff->days > 0 && $diff->invert === 0) {
+                    $this->log->begin("Close {$milestone['title']}");
+
                     // The milestone is overdue and complete and can be closed.
                     $r = $this->api()->patch(
                         "/repos/{$this->toRepo}/milestones/{$milestone['number']}",
                         ['state' => 'closed']
                     );
 
-                    $this->message("Close {$milestone['title']}.", $r->getStatusCode());
+                    $this->log->endHttpStatus($r->getStatusCode(), true);
                 }
 
             }
         }
 
-        $this->message('Done.');
+        $this->log->end('Done');
     }
 
     /**
@@ -375,7 +386,7 @@ class GithubSync {
      * @return int Returns the messageLevel.
      */
     public function getMessageLevel() {
-        return $this->messageLevel;
+        return $this->log->getMaxLevel();
     }
 
     /**
@@ -385,7 +396,7 @@ class GithubSync {
      * @return GithubSync Returns `$this` for fluent calls.
      */
     public function setMessageLevel($messageLevel) {
-        $this->messageLevel = $messageLevel;
+        $this->log->setMaxLevel($messageLevel);
         return $this;
     }
 }

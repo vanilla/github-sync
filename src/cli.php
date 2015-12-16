@@ -42,7 +42,7 @@ try {
     $sync
         ->setFromRepo($args->getOpt('from'))
         ->setToRepo($args->getOpt('to'))
-        ->setMessageLevel($args->getOpt('quiet') ? LOG_INFO : LOG_DEBUG);
+        ->setMessageLevel($args->getOpt('quiet') ? 1 : 3);
 
     switch ($args->getCommand()) {
         case 'labels':
