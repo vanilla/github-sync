@@ -20,19 +20,25 @@ foreach ($paths as $path) {
 
 $cli = new Cli();
 
-$cli->opt('from:f', 'The github repo to copy the labels from.', true)
-    ->opt('to:t', 'The github repo to copy the labels to.', true)
-    ->opt('token', 'The github access token. Uses the GITHUB_API_TOKEN if not specified.')
+$cli->opt('token', 'The github access token. Uses the GITHUB_API_TOKEN if not specified.')
     ->opt('quiet:q', "Don't output verbose information.", false, 'boolean')
 
     ->command('labels')
     ->description('Copy the labels from one github repo to another.')
+    ->opt('from:f', 'The github repo to copy the labels from.', true)
+    ->opt('to:t', 'The github repo to copy the labels to.', true)
     ->opt('delete:d', 'Whether or not to delete extra labels.', false, 'boolean')
 
     ->command('milestones')
     ->description('Copy milestones from one github repo to another.')
+    ->opt('from:f', 'The github repo to copy the labels from.', true)
+    ->opt('to:t', 'The github repo to copy the labels to.', true)
     ->opt('status:s', 'The milestone status. One of open, closed, all. Defaults to open.')
     ->opt('autoclose', 'Whether or not to close milestones that are overdue and don\'t have any items.', false, 'boolean')
+
+    ->command('overdue')
+    ->description('Label issues from an past due milestones as overdue.')
+    ->opt('repo:r', 'The github repo to inspect.', true)
     ;
 
 $args = $cli->parse($argv);
@@ -50,6 +56,10 @@ try {
             break;
         case 'milestones':
             $sync->syncMilestones($args->getOpt('status', 'open'), $args->getOpt('autoclose', false));
+            break;
+        case 'overdue':
+            $sync->setFromRepo($args->getOpt('repo'));
+            $sync->labelOverdue();
             break;
     }
 } catch (Exception $ex) {

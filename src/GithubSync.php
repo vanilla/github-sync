@@ -399,4 +399,48 @@ class GithubSync {
         $this->log->setMaxLevel($messageLevel);
         return $this;
     }
+
+    /**
+     * Label open issues from past due milestones as overdue.
+     *
+     * @param string $label The name of the label to apply to the issues when overdue.
+     */
+    public function labelOverdue($label = 'Overdue') {
+        $this->log->begin("Marking issues overdue on {$this->fromRepo}");
+
+        // Check to see if the label exists.
+        $label = $this->api()->get("/repos/{$this->fromRepo}/labels/".rawurlencode($label));
+        if (!$label->isSuccessful()) {
+            $this->log->endError("Could not find label: $label");
+            return;
+        }
+
+        $milestones = $this->getMilestones($this->getFromRepo());
+        $now = new \DateTime();
+
+        foreach ($milestones as $milestone) {
+            $due = new \DateTime($milestone['due_on']);
+            if ($due > $now || $milestone['open_issues'] <= 0) {
+                continue;
+            }
+
+            // The milestone has open issues so get them.
+            $issues = $this->api()->get("/repos/{$this->fromRepo}/issues", ['milestone' => $milestone['number']]);
+            if (!$issues->isSuccessful()) {
+                $this->log->error($issues['message']);
+                continue;
+            }
+            foreach ($issues->getBody() as $issue) {
+                $r = $this->api()->post(
+                    "/repos/{$this->fromRepo}/issues/{$issue['number']}/labels",
+                    [$label]
+                );
+                if ($r->isSuccessful()) {
+                    $this->log->message("#{$issue['number']} {$issue['title']}: $label", true);
+                }
+            }
+        }
+
+        $this->log->end('Done');
+    }
 }
