@@ -107,7 +107,7 @@ class GithubSync {
      * @return array Returns an array of the labels in the repo.
      */
     public function getLabels($repo) {
-        $r = $this->api()->get("/repos/$repo/labels", [], [], ['throw' => true]);
+        $r = $this->api()->get("/repos/$repo/labels", ['per_page' => 100], [], ['throw' => true]);
 
         $labels = $r->getBody();
         $labels = array_column($labels, null, 'name');
