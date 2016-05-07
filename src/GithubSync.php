@@ -409,8 +409,8 @@ class GithubSync {
         $this->log->begin("Marking issues overdue on {$this->fromRepo}");
 
         // Check to see if the label exists.
-        $label = $this->api()->get("/repos/{$this->fromRepo}/labels/".rawurlencode($label));
-        if (!$label->isSuccessful()) {
+        $labelResponse = $this->api()->get("/repos/{$this->fromRepo}/labels/".rawurlencode($label));
+        if (!$labelResponse->isSuccessful()) {
             $this->log->endError("Could not find label: $label");
             return;
         }
