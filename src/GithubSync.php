@@ -446,6 +446,10 @@ class GithubSync {
                 continue;
             }
             foreach ($issues->getBody() as $issue) {
+                if (in_array($label, array_column($issue['labels'], 'name'))) {
+                    continue;
+                }
+
                 $r = $this->api()->post(
                     "/repos/{$this->fromRepo}/issues/{$issue['number']}/labels",
                     [$label]
