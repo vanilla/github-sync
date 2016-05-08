@@ -11,6 +11,9 @@ use Garden\Cli\LogFormatter;
 use Garden\Http\HttpClient;
 
 class GithubSync {
+    const DELETE_FORCE = 'delete';
+    const DELETE_PRUNE = 'prune';
+
     /// Properties ///
 
     /*
@@ -152,9 +155,10 @@ class GithubSync {
     /**
      * Copy the labels from one repo to another.
      *
-     * @param bool $delete Whether or not to delete labels in the destination that aren't in the source.
+     * @param string $delete Whether or not to delete labels in the destination that aren't in the source. This is one
+     * of the **DELETE_*** constants.
      */
-    public function syncLabels($delete = false) {
+    public function syncLabels($delete = '') {
         $this->log->begin("Synchronizing labels from {$this->fromRepo} to {$this->toRepo}");
         $fromLabels = $this->getLabels($this->getFromRepo());
         $toLabels = $this->getLabels($this->getToRepo());
@@ -202,13 +206,24 @@ class GithubSync {
         // Get the labels to delete.
         $deleteLabels = array_diff_key($toLabels, $fromLabels);
         foreach ($deleteLabels as $label) {
-            if ($delete) {
-                $this->log->begin("Delete {$label['name']}");
+            if ($delete === self::DELETE_PRUNE) {
+                // Only delete the label if it has no open issues.
+                $issues = $this->api()->get(
+                    "/repos/{$this->toRepo}/issues",
+                    ['labels' => $label['name'], 'per_page' => 1]
+                );
 
+                if (count($issues->getBody()) > 0) {
+                    $this->log->message("The \"{$label['name']}\" label is in use and won't be deleted.");
+                    continue;
+                }
+            }
+
+            if ($delete !== '') {
+                $this->log->begin("Delete {$label['name']}");
                 $r = $this->api()->delete(
                     "/repos/{$this->toRepo}/labels/".rawurlencode($label['name'])
                 );
-
                 $this->log->endHttpStatus($r->getStatusCode(), true);
             } else {
                 $this->log->message("Not deleting {$label['name']}");

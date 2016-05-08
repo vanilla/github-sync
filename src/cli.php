@@ -27,7 +27,7 @@ $cli->opt('token', 'The github access token. Uses the GITHUB_API_TOKEN if not sp
     ->description('Copy the labels from one github repo to another.')
     ->opt('from:f', 'The github repo to copy the labels from.', true)
     ->opt('to:t', 'The github repo to copy the labels to.', true)
-    ->opt('delete:d', 'Whether or not to delete extra labels.', false, 'boolean')
+    ->opt('delete:d', 'Pass one of force or prune to force delete or prune unused labels.', false)
 
     ->command('milestones')
     ->description('Copy milestones from one github repo to another.')
