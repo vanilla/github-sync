@@ -63,6 +63,7 @@ class GithubSync {
             $api = new GithubClient();
             $api->setBaseUrl('https://api.github.com')
                 ->setDefaultHeader('Content-Type', 'application/json')
+                ->setDefaultHeader('Accept', 'application/vnd.github.symmetra-preview+json')
                 ->setLog($this->log);
 
             $this->api = $api;
@@ -172,7 +173,11 @@ class GithubSync {
 
             $r = $this->api()->post(
                 "/repos/{$this->toRepo}/labels",
-                ['name' => $label['name'], 'color' => $label['color']]
+                [
+                    'name' => $label['name'],
+                    'color' => $label['color'],
+                    'description' => $label['description'],
+                ]
             );
 
             $this->log->endHttpStatus($r->getStatusCode(), true);
@@ -183,7 +188,7 @@ class GithubSync {
         $updateLabels = array_filter($updateLabels, function($to) use ($fromLabels) {
             $from = $fromLabels[strtolower($to['name'])];
 
-            if ($from['name'] !== $to['name'] || $from['color'] !== $to['color']) {
+            if ($from['name'] !== $to['name'] || $from['color'] !== $to['color'] || $from['description'] !== $to['description']) {
                 return true;
             }
             return false;
@@ -196,8 +201,11 @@ class GithubSync {
 
             $r = $this->api()->patch(
                 "/repos/{$this->toRepo}/labels/".rawurlencode($label['name']),
-                ['name' => $newLabel['name'], 'color' => $newLabel['color']]
-
+                [
+                    'name' => $newLabel['name'],
+                    'color' => $newLabel['color'],
+                    'description' => $newLabel['description'],
+                ]
             );
 
             $this->log->endHttpStatus($r->getStatusCode(), true);
