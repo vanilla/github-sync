@@ -1,19 +1,18 @@
 # Github Sync
 
-Synchronize information between github repos with style.
-
-This little command line tool will copy issue labels and milestones from one github repo to another. This is useful if
-you have many repos and you want to use the same labelling scheme amongst all of them.
+Copy issue labels and milestones from one GitHub repo to another. This is useful if
+you have many repos and you want to use the same labelling scheme amongst all of them
+or keep milestone data synced for tools like ZenHub.
 
 ## Installation
 
-This is a great tool to install with composer globally.
+This is a great tool to install globally with Composer.
 
 1. Run `composer global require 'vanilla/github-sync'` to install the application.
-2. If your global composer bin directory is in your path you can run the app with `github-sync`. There is help on the
-command line so check it out.
+2. If your global composer bin directory is in your path you can run the app with `github-sync`. For help, add `-h`.
+3. Generate a [personal access token](https://github.com/blog/1509-personal-api-tokens) and add it to your `~/.bashrc` file as `export GITHUB_API_TOKEN=xxxxx`.
 
-## Tips
+## Usage
 
-To use this tool you'll need to generate a [personal access token](https://github.com/blog/1509-personal-api-tokens).
-It will be much easier if you stick your access token into the `GITHUB_API_TOKEN` environment variable.
+* `labels [-f] [-t] [-d]`       Copy the labels from one GitHub repo to another. Set a 'from' repo and 'to' repo. The `delete` option will remove any labels from the 'to' repo that don't exist on the 'from' repo.
+* `milestones [-f] [-t] [-s] [--autoclose]`   Copy milestones from one GitHub repo to another. Set a 'from' repo, 'to' repo, and/or a 'status' to select (one of `open`, `closed`, `all`). The `autoclose` option will close milestones past their due date or with zero items.
