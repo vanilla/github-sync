@@ -398,7 +398,7 @@ class GithubSync {
      * @return array[array] Returns an array of milestones.
      */
     public function getMilestones($repo, $state = 'open') {
-        $r = $this->api()->get("/repos/$repo/milestones", ['state' => $state]);
+        $r = $this->api()->get("/repos/$repo/milestones", ['state' => $state, 'direction' => 'desc']);
         $data = array_change_key_case(array_column($r->getBody(), null, 'title'));
         return $data;
     }
