@@ -19,7 +19,13 @@ This is a great tool to install globally with Composer.
 3. Update [Packagist](https://packagist.org/packages/vanilla/github-sync) or wait for it to sync.
 4. Reinstall using the global `composer` command above.
 
+## Develop
+
+1. Pull the repo locally and go to the root.
+2. `composer update`
+3. Test commands with `bin/github-sync {test command}` (see below) to invoke repo copy rather than global install.
+
 ## Usage
 
-* `labels [-f] [-t] [-d]`       Copy the labels from one GitHub repo to another. Set a 'from' repo and 'to' repo. The `delete` option will remove any labels from the 'to' repo that don't exist on the 'from' repo.
-* `milestones [-f] [-t] [-s] [--autoclose]`   Copy milestones from one GitHub repo to another. Set a 'from' repo, 'to' repo, and/or a 'status' to select (one of `open`, `closed`, `all`). The `autoclose` option will close milestones past their due date or with zero items.
+* `github-sync labels [-f] [-t] [-d]`       Copy the labels from one GitHub repo to another. Set a 'from' repo and 'to' repo. The `delete` option will remove any labels from the 'to' repo that don't exist on the 'from' repo.
+* `github-sync milestones [-f] [-t] [-s] [--autoclose]`   Copy milestones from one GitHub repo to another. Set a 'from' repo, 'to' repo, and/or a 'status' to select (one of `open`, `closed`, `all`). The `autoclose` option will close milestones past their due date or with zero items.
