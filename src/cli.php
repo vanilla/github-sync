@@ -52,7 +52,7 @@ try {
 
     switch ($args->getCommand()) {
         case 'labels':
-            $sync->syncLabels($args->getOpt('delete'));
+            $sync->syncLabels($args->getOpt('delete', ''));
             break;
         case 'milestones':
             $sync->syncMilestones($args->getOpt('status', 'open'), $args->getOpt('autoclose', false));
