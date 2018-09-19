@@ -1,4 +1,4 @@
-# Github Sync
+# GitHub Sync
 
 Copy issue labels and milestones from one GitHub repo to another. This is useful if
 you have many repos and you want to use the same labelling scheme amongst all of them
