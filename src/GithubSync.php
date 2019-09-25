@@ -284,11 +284,8 @@ class GithubSync {
             $fromTitle = strtolower($from['title']);
             $titleDiff = strcmp($toTitle, $fromTitle);
 
-            if ($toTitle === $fromTitle || empty($to['due_on']) || empty($from['due_on'])) {
-                return $titleDiff;
-            } elseif ($to['due_on'] === $from['due_on'] &&
-                !array_key_exists($fromTitle, $toMilestones)) {
-                // The milestone has the same date and there isn't another one with the same name.
+            // The milestone has the same date and there isn't another one with the same name.
+            if ($to['due_on'] === $from['due_on'] && !array_key_exists($fromTitle, $toMilestones)) {
                 return 0;
             } else {
                 return $titleDiff;
@@ -338,6 +335,10 @@ class GithubSync {
 
         // Check for auto-closing milestones.
         if ($autoClose) {
+            // Get updated list of milestones
+            $toMilestones = $this->getMilestones($this->getToRepo(), 'open');
+            $this->log->message($toMilestones);
+
             foreach ($toMilestones as $milestone) {
                 if ($milestone['state'] !== 'open' ||
                     $milestone['open_issues'] > 0 ||
@@ -379,14 +380,12 @@ class GithubSync {
         if (array_key_exists(strtolower($milestone['title']), $arr)) {
             return $arr[strtolower($milestone['title'])];
         }
-
         // Try and find a matching milestone.
         foreach ($arr as $row) {
             if ($row['due_on'] === $milestone['due_on']) {
                 return $row;
             }
         }
-
         return null;
     }
 
