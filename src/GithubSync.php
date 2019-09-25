@@ -284,8 +284,11 @@ class GithubSync {
             $fromTitle = strtolower($from['title']);
             $titleDiff = strcmp($toTitle, $fromTitle);
 
-            // The milestone has the same date and there isn't another one with the same name.
-            if ($to['due_on'] === $from['due_on'] && !array_key_exists($fromTitle, $toMilestones)) {
+            if ($toTitle === $fromTitle || empty($to['due_on']) || empty($from['due_on'])) {
+                return $titleDiff;
+            } elseif ($to['due_on'] === $from['due_on'] &&
+                !array_key_exists($fromTitle, $toMilestones)) {
+                // The milestone has the same date and there isn't another one with the same name.
                 return 0;
             } else {
                 return $titleDiff;
