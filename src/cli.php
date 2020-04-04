@@ -28,6 +28,7 @@ $cli->opt('token', 'The github access token. Uses the GITHUB_API_TOKEN if not sp
     ->opt('from:f', 'The github repo to copy the labels from.', true)
     ->opt('to:t', 'The github repo to copy the labels to.', true)
     ->opt('delete:d', 'Pass one of force or prune to force delete or prune unused labels.', false)
+    ->opt('prefix:p', 'A whitelist of label prefixes.')
 
     ->command('milestones')
     ->description('Copy milestones from one github repo to another.')
@@ -52,7 +53,8 @@ try {
 
     switch ($args->getCommand()) {
         case 'labels':
-            $sync->syncLabels($args->getOpt('delete', ''));
+            $prefixes = array_map('trim', explode(',', $args->getOpt('prefix')));
+            $sync->syncLabels($args->getOpt('delete', ''), $prefixes);
             break;
         case 'milestones':
             $sync->syncMilestones($args->getOpt('status', 'open'), $args->getOpt('autoclose', false));

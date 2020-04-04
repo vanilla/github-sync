@@ -108,12 +108,27 @@ class GithubSync {
      * Get all the labels from a given repo.
      *
      * @param string $repo The name of the github repo in the form `user/repo`.
+     * @param array|null $prefixes
      * @return array Returns an array of the labels in the repo.
      */
-    public function getLabels($repo) {
+    public function getLabels($repo, ?array $prefixes = null) {
+        $labels = [];
+
         $r = $this->api()->get("/repos/$repo/labels", ['per_page' => 100], [], ['throw' => true]);
 
-        $labels = $r->getBody();
+        $labels = iterator_to_array($r->getBody(), false);
+
+        if ($prefixes !== null) {
+            $labels = array_filter($labels, function ($row) use ($prefixes) {
+                foreach ($prefixes as $prefix) {
+                    if (fnmatch($prefix, $row['name'], FNM_CASEFOLD)) {
+                        return true;
+                    }
+                }
+                return false;
+            });
+        }
+
         $labels = array_column($labels, null, 'name');
         $labels = array_change_key_case($labels);
         return $labels;
@@ -159,9 +174,9 @@ class GithubSync {
      * @param string $delete Whether or not to delete labels in the destination that aren't in the source. This is one
      * of the **DELETE_*** constants.
      */
-    public function syncLabels($delete = '') {
+    public function syncLabels($delete = '', array $prefixes) {
         $this->log->begin("Synchronizing labels from {$this->fromRepo} to {$this->toRepo}");
-        $fromLabels = $this->getLabels($this->getFromRepo());
+        $fromLabels = $this->getLabels($this->getFromRepo(), $prefixes);
         $toLabels = $this->getLabels($this->getToRepo());
 
         // Get the labels that need to be added.
@@ -169,16 +184,30 @@ class GithubSync {
             return strcasecmp($to['name'], $from['name']);
         });
         foreach ($addLabels as $label) {
+            // Look for a label to rename.
+            $updateLabel = $this->findLabelToUpdate($toLabels, $label);
+
             $this->log->begin("Add {$label['name']}");
 
-            $r = $this->api()->post(
-                "/repos/{$this->toRepo}/labels",
-                [
-                    'name' => $label['name'],
-                    'color' => $label['color'],
-                    'description' => $label['description'],
-                ]
-            );
+            if ($updateLabel === null) {
+                $r = $this->api()->post(
+                    "/repos/{$this->toRepo}/labels",
+                    [
+                        'name' => $label['name'],
+                        'color' => $label['color'],
+                        'description' => $label['description'],
+                    ]
+                );
+            } else {
+                $r = $this->api()->patch(
+                    "/repos/{$this->toRepo}/labels/".rawurlencode($updateLabel['name']),
+                    [
+                        'name' => $label['name'],
+                        'color' => $label['color'],
+                        'description' => $label['description'],
+                    ]
+                );
+            }
 
             $this->log->endHttpStatus($r->getStatusCode(), true);
         }
@@ -471,5 +500,14 @@ class GithubSync {
         }
 
         $this->log->end('Done');
+    }
+
+    private function findLabelToUpdate(array $toLabels, $label) {
+        $parts = explode(': ', $label['name'], 2);
+        $name = strtolower(isset($parts[1]) ? $parts[1] : $parts[0]);
+        $stemmed = strtolower(str_replace([' ', '\''], '', $name));
+
+        $r = $toLabels[$name] ?? ($toLabels[$stemmed] ?? null);
+        return $r;
     }
 }
